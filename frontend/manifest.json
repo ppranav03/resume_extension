@@ -1,0 +1,14 @@
+{
+    "manifest_version": 3,
+    "name": "Fake News Verifier",
+    "version": "1.0",
+    "description": "Verify if an article is fake or not.",
+    "permissions": ["tabs"],
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "background": {
+      "service_worker": "popup.js"
+    }
+  }
+  

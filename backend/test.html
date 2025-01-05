@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Fetch</title>
+</head>
+<body>
+    <script>
+        const url = "http://127.0.0.1:5000/verify"; // Backend URL
+        const data = { url: "https://example.com/news-article" };
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(result => {
+                console.log(result); // Output from the Flask server
+            })
+            .catch(error => console.error("Error:", error));
+    </script>
+</body>
+</html>

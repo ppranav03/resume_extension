@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fake News Verifier</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h3>Fake News Verifier</h3>
+  <input type="text" id="url" placeholder="Enter article URL" style="width: 100%;" />
+  <button id="verifyButton">Verify</button>
+  <p id="result"></p> <!-- This will display the result from the API -->
+  <script src="popup.js"></script>
+  <style>
+
+    h3{
+      margin: 8px 0;
+    }
+    
+    #url{
+      width: 15%;
+      padding: 12px 20px;
+      margin: 8px 0;
+    }
+
+    #verifyButton {
+      background-color: rgb(1, 114, 170);
+      border: 1px;
+      text-align: center;
+      transition-duration:0.5s;
+      font-size: 14px;
+      padding: 15px 52px;
+      margin: 8px 0;
+      color: black;
+
+    }
+    #verifyButton:hover{
+      background-color: whitesmoke;
+    }
+  </style>
+</body>
+</html>
