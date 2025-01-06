@@ -17,11 +17,17 @@ document.getElementById("verifyButton").addEventListener("click", async () => {
   }
 
   const data = await response.json()
-  const urlback = String(data.url)
+  
+  let currentUrl = "";
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs.length > 0) {
+      currentUrl = tabs[0].url;
+      const result = document.getElementById('result')
+      if (currentUrl){
+        result.textContent = currentUrl
+      }
+    }
+  });
 
-  const result = document.getElementById('result')
-  if (urlback){
-    result.textContent = urlback
-  }
-
-});
+}
+);

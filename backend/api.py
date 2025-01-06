@@ -11,13 +11,14 @@ def hello_world():
 
 @app.route("/verify", methods=['POST'])
 def verify():
-    data = request.json
+    data = request.get_json()
+    if not data or "url" not in data:
+        return jsonify({"error": "Invalid Request. a url is needed"}), 401
+    
     url = data.get('url')
 
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-
-
+    # response = requests.get(url)
+    # soup = BeautifulSoup(response.content, 'html.parser')
 
     return jsonify({
         'url': url
