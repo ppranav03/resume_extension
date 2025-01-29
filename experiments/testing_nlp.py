@@ -11,6 +11,10 @@ matcher.add("TerminologyList", patterns)
 doc = nlp("German Chancellor Angela Merkel and US President Barack Obama "
           "converse in the Oval Office inside the White House in Washington, D.C.")
 matches = matcher(doc)
+found_skills = []
 for match_id, start, end in matches:
     span = doc[start:end]
+    if found_skills.count(span) == 0:
+        found_skills.append(span.text)
     print(span.text)
+

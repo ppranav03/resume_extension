@@ -38,7 +38,7 @@ def scan():
 def find_skills(job_description):
     nlp = spacy.load("en_core_web_sm")
     matcher = PhraseMatcher(nlp.vocab)
-    terms = ["Python", "SQL", "Java"]
+    terms = ["Python", "SQL", "Java", "C++", "JavaScript", "HTML", "CSS", "Ruby", "PHP", "Swift", "Go", "Kotlin", "R", "TypeScript", "Perl", "Scala", "Rust", "MATLAB"]
     skills = [nlp.make_doc(term) for term in terms]
 
     matcher.add("TechSkills", skills)
@@ -49,7 +49,7 @@ def find_skills(job_description):
     for match_id, start, end in matches:
         # string_id = doc.vocab.strings[match_id]  # Look up string ID
         span = doc[start:end]
-        if found_skills.count(span) == 0:
+        if found_skills.count(span.text) == 0:
             found_skills.append(span.text)
     return found_skills
 
