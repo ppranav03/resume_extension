@@ -41,7 +41,7 @@ def scan():
     #           "Summarize the output in roughly 100 words."
     # )
 
-    prompt = (f"What company is this and what kind of role are they looking for? Use this html content from the application website {webtext.get('title')} to determine the company and role. Return it as a json string with the company and role. ")
+    prompt = (f"What company is this and what kind of role are they looking for? Use this html content from the application website {webtext.get('script_tag')} to determine the company and role. Do not add the level of experience into the role just solely the role and company. ")
     my_gen_config = genai.GenerationConfig(
         temperature=0.5,
         response_mime_type="application/json",
@@ -55,7 +55,7 @@ def scan():
 
     response_json = json.loads(response.text)
     contacts = search_contacts(response_json)
-
+    print(response_json)
     return jsonify({
         'url': url,
         'webtext' : webtext["content"],
@@ -144,9 +144,11 @@ def process_url(url, wish_list=None):
         response = requests.get(url)
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
+            script_tag = soup.find("script", {"type": "application/ld+json"})
             webtext = {
                 "title": soup.title.string,
-                "content": soup.prettify()
+                "content": soup.prettify(),
+                "script_tag" : script_tag
             }
     except Exception as e:
         print(f"Error with retrieving html content: {e}")
@@ -165,6 +167,7 @@ def search_contacts(job_details):
     query = f'site:linkedin.com/in "{company}" "{role}" "Virginia Tech"'
     results = [url for url in search(query, num_results=10)]
     return results
+
 
 if __name__ == "__main__":
     app.run(debug=True)
