@@ -9,3 +9,4 @@ pymupdf
 google-generativeai
 python-dotenv
 googlesearch-python
+serpapi

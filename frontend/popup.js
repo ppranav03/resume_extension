@@ -15,21 +15,29 @@ function getCurrentTab() {
 }
 
 document.getElementById("scanButton").addEventListener("click", async () => {
+  const universityInput = document.getElementById("universityInput").value;
+  if (!universityInput) {
+    alert("Please enter a university");
+    return;
+  }
 
   const currentUrl = await getCurrentTab();
-  const result = document.getElementById('scan_result')
-  result.textContent = ''
+  const result = document.getElementById('scan_result');
+  result.textContent = '';
 
   // Call the backend API
-  if (currentUrl) {
+  if (currentUrl && universityInput) {
     const response = await fetch("http://127.0.0.1:5000/scan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: currentUrl })
+      body: JSON.stringify({ 
+        url: currentUrl,
+        university: universityInput
+      })
     });
 
     if (response.status != 200){
-      console.error("A mistake was made")
+      console.error("A mistake was made");
     }
 
     const data = await response.json();
@@ -43,20 +51,17 @@ document.getElementById("scanButton").addEventListener("click", async () => {
     //   await new Promise(resolve => setTimeout(resolve, 200));
     //   result.innerHTML += words[i] + ' ';
     // }
-
-    if (data.contacts) {
+    if (data.contacts && data.links) {
       const contactsList = document.createElement('ul');
-      data.contacts.forEach(contact => {
+      data.contacts.forEach((contact, index) => {
         const listItem = document.createElement('li');
-        listItem.innerHTML = '<a href="' + contact + '">' + contact + '</a>';
+        listItem.innerHTML = '<a href="' + data.links[index] + '" target="_blank">' + contact + '</a>';
         contactsList.appendChild(listItem);
       });
       result.appendChild(contactsList);
     }
-
-    }
   }
-);
+});
 
 document.getElementById("uploadButton").addEventListener("click", async () => {
   const fileInput = document.getElementById("fileInput");

@@ -20,7 +20,7 @@ def hello_world():
 @app.route("/scan", methods=['POST'])
 def scan():
     data = request.get_json()
-    if not data or "url" not in data:
+    if not data or "url" not in data or "university" not in data:
         return jsonify({"error": "Invalid Request. a url is needed"}), 401
     
 
@@ -54,14 +54,18 @@ def scan():
     )
 
     response_json = json.loads(response.text)
-    contacts = search_contacts(response_json)
+    response_json['university'] = data.get('university')
+    results = search_contacts(response_json)
+    contacts = [result["title"] for result in results]
+    links = [result["link"] for result in results]
     print(response_json)
     return jsonify({
         'url': url,
         'webtext' : webtext["content"],
         # 'skills' : skills,
         'ai_response' : response.text,
-        'contacts': contacts
+        'contacts': contacts,
+        'links': links
     })
 
 @app.route("/file", methods=['POST'])
@@ -163,10 +167,25 @@ def process_pdf(file):
 def search_contacts(job_details):
     company = job_details.get('company')
     role = job_details.get('role')
+    university = job_details.get('university')
+    print(f"UNIVERSITY:{university}")
 
-    query = f'site:linkedin.com/in "{company}" "{role}" "Virginia Tech"'
-    results = [url for url in search(query, num_results=10)]
+    google_search_key = os.getenv("GOOGLE_SEARCH_KEY")
+    cx = os.getenv("GOOGLE_SEARCH_CX")  
+    query = f'site:linkedin.com/in "{company}" "{role}" "{university}"'
+    # url = f"https://api.scraperapi.com?api_key={scraper_api_key}&url=https://www.google.com/search?q={query}"
+    # results = [url for url in search(query, num_results=10)]
+    # return results
+    url = f"https://www.googleapis.com/customsearch/v1?q={query}&key={google_search_key}&cx={cx}"
+
+    response = requests.get(url)
+    data = response.json()
+
+    # links = [item["link"] for item in data.get("items", [])]
+    results = data.get("items", [])
+
     return results
+
 
 
 if __name__ == "__main__":

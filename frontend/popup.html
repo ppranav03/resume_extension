@@ -1,61 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Job Skills Finder</title>
+  <title>Referral Lookup</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 10px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
       width: 300px;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    h3 {
+      margin: 16px 0;
+      color: #007acc;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #007acc;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 10px 0;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #005f99;
+    }
+
+    p {
+      margin: 10px 0;
+      font-size: 14px;
+    }
+
+    #scan_result, #resume_result, #compare_result {
+      color: #007acc;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h3>Job Skills Finder</h3>
-  <input type="text" placeholder="College/University">
+  <h3>Referral Lookup</h3>
+  <input type="text" placeholder="College/University" id="universityInput">
   <button id="scanButton">Scan</button>
   <p id="scan_result"></p> <!-- This will display the result from the API -->
-  <p id = "resume_result"></p>
-  <p id = "compare_result"></p>
-  <style>
-    
-    h3{
-      margin: 8px 0;
-    }
-    
-    #url{
-      width: 15%;
-      padding: 12px 20px;
-      margin: 8px 0;
-    }
-    
-    #scanButton {
-      background-color: rgb(1, 114, 170);
-      border: 1px;
-      text-align: center;
-      transition-duration:0.5s;
-      font-size: 14px;
-      padding: 15px 52px;
-      margin: 8px 0;
-      color: black;
-      
-    }
-
-    #scanButton:hover{
-      background-color: whitesmoke;
-    }
-    
-    #result {
-      margin: 8px 0;
-      font-size: 12px;
-      color: blue;
-    }
-  </style>
-
-<!-- <h3>Upload Your Resume</h3>
-<input type = "file" id="fileInput"/>
-<button id = "uploadButton">Upload</button> -->
-<!-- <button id = "compareButton">Compare</button> -->
-<script src="popup.js"></script>
+  <p id="resume_result"></p>
+  <p id="compare_result"></p>
+  <script src="popup.js"></script>
 </body>
 </html>
