@@ -172,7 +172,7 @@ def search_contacts(job_details):
 
     google_search_key = os.getenv("GOOGLE_SEARCH_KEY")
     cx = os.getenv("GOOGLE_SEARCH_CX")  
-    query = f'site:linkedin.com/in "{company}" "{role}" "{university}"'
+    query = f'site:linkedin.com/in {company} {role} {university}'
     # url = f"https://api.scraperapi.com?api_key={scraper_api_key}&url=https://www.google.com/search?q={query}"
     # results = [url for url in search(query, num_results=10)]
     # return results

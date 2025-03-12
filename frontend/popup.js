@@ -55,7 +55,7 @@ document.getElementById("scanButton").addEventListener("click", async () => {
       const contactsList = document.createElement('ul');
       data.contacts.forEach((contact, index) => {
         const listItem = document.createElement('li');
-        listItem.innerHTML = '<a href="' + data.links[index] + '" target="_blank">' + contact + '</a>';
+        listItem.innerHTML = '<a href="' + data.links[index] + '">' + contact + '</a>';
         contactsList.appendChild(listItem);
       });
       result.appendChild(contactsList);
