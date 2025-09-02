@@ -25,10 +25,12 @@ def scan():
     
 
     url = data.get('url')
+    print(f"URL: {url}")
     webtext = process_url(url)
     if webtext is None:
         return jsonify({"error": "Invalid URL"}), 401
     
+    print(webtext['description'])
     # skills = find_skills(webtext["content"])
 
     
@@ -41,7 +43,12 @@ def scan():
     #           "Summarize the output in roughly 100 words."
     # )
 
-    prompt = (f"What company is this and what kind of role are they looking for? Use this html content from the application website {webtext.get('script_tag')} to determine the company and role. Do not add the level of experience into the role just solely the role and company. ")
+
+    prompt = (
+        f"""What company is this and what kind of role are they looking for? Use this html content from the application website {webtext.get('description')} to determine the company and role.
+        Also use the website title for more context : {webtext["title"]}.
+        Do not add the level of experience into the role just solely the role and company."""
+    )
     my_gen_config = genai.GenerationConfig(
         temperature=0.5,
         response_mime_type="application/json",
@@ -66,22 +73,6 @@ def scan():
         'ai_response' : response.text,
         'contacts': contacts,
         'links': links
-    })
-
-@app.route("/file", methods=['POST'])
-def file():
-    if 'file' not in request.files:
-        return jsonify({"error": "Invalid Request. a file is needed"}), 401
-
-    file = request.files['file']
-    resume = file.read()
-
-    resume_content = process_pdf(resume)
-    skills = find_skills(resume_content)
-
-    return jsonify({
-        'fileName': file.filename,
-        'skills': skills
     })
 
 
@@ -148,11 +139,12 @@ def process_url(url, wish_list=None):
         response = requests.get(url)
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
-            script_tag = soup.find("script", {"type": "application/ld+json"})
+            description = soup.find("meta", attrs={"property": "og:description"})
+            # Something wrong with the script_tag.
             webtext = {
                 "title": soup.title.string,
                 "content": soup.prettify(),
-                "script_tag" : script_tag
+                "description" : description
             }
     except Exception as e:
         print(f"Error with retrieving html content: {e}")

@@ -3,7 +3,7 @@
   "name": "Referral Finder",
   "version": "1.0",
   "description": "Find contacts for a job you are interested in!",
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["tabs", "activeTab", "scripting"],
   "action": {
     "default_popup": "popup.html"
   },
