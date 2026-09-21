@@ -1,10 +1,11 @@
-Download all the requirements with python version < 3.13
-Run command "pip install -r requirements.txt"
-After installing the packages run this command: "python -m spacy download en_core_web_sm"
+Install the requirements with "pip install -r requirements.txt".
 
-Need to first go to chrome://extensions on google chrome browswer
+Create a .env file in the project root with:
+    GEMINI_KEY (aistudio.google.com/apikey), SERPER_KEY (serper.dev)
+
+Go to chrome://extensions in Google Chrome
     Click on 'Load Unpacked'
     Navigate into the frontend directory and upload it.
 
-Now on terminal/VS Code navigate to the backend directory.
-    Run python api using python -m flask --app api run
+Now in a terminal/VS Code navigate to the backend directory.
+    Run the API using: python -m flask --app api run

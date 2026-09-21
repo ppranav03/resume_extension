@@ -2,11 +2,5 @@ Flask
 flask-cors
 beautifulsoup4
 requests
-setuptools
-wheel
-spacy
-pymupdf
 google-generativeai
 python-dotenv
-googlesearch-python
-serpapi
