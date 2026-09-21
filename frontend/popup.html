@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
   <title>Referral Lookup</title>
   <style>
     body {
@@ -12,7 +13,7 @@
     }
 
     h3 {
-      margin: 16px 0;
+      margin: 0 0 12px;
       color: #007acc;
     }
 
@@ -44,22 +45,123 @@
       background-color: #005f99;
     }
 
+    button:disabled {
+      background-color: #8fb8d0;
+      cursor: default;
+    }
+
     p {
       margin: 10px 0;
       font-size: 14px;
+    }
+
+    .hint {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 8px;
+    }
+
+    .tabs button {
+      flex: 1;
+      margin: 0;
+      padding: 8px 0;
+      font-size: 14px;
+      background: none;
+      color: #666;
+      border-radius: 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tabs button:hover {
+      color: #007acc;
+      background: none;
+    }
+
+    .tabs button[aria-selected="true"] {
+      color: #007acc;
+      font-weight: 600;
+      border-bottom-color: #007acc;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    ul {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    #tabList, #cluster_result {
+      list-style: none;
+      padding: 0;
+      font-size: 13px;
+    }
+
+    #tabList {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #tabList label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 2px;
+      cursor: pointer;
+    }
+
+    #tabList .tab-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #cluster_result li {
+      padding: 3px 0;
     }
 
     #scan_result {
       color: #007acc;
       font-weight: bold;
     }
+
+    #dashboardLink {
+      display: block;
+      margin-top: 14px;
+      font-size: 13px;
+      color: #007acc;
+    }
   </style>
 </head>
 <body>
   <h3>Referral Lookup</h3>
-  <input type="text" placeholder="College/University" id="universityInput">
-  <button id="scanButton">Scan</button>
-  <p id="scan_result"></p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-referral" aria-selected="true" aria-controls="panel-referral">Referrals</button>
+    <button role="tab" id="tab-cluster" aria-selected="false" aria-controls="panel-cluster">Clusters</button>
+  </div>
+
+  <section id="panel-referral" role="tabpanel" aria-labelledby="tab-referral">
+    <p class="hint">Find people at this job's company who went to your school.</p>
+    <input type="text" placeholder="College/University" id="universityInput">
+    <button id="scanButton">Scan this page</button>
+    <p id="scan_result"></p>
+  </section>
+
+  <section id="panel-cluster" role="tabpanel" aria-labelledby="tab-cluster" hidden>
+    <p class="hint">Tick the job postings you have open, then add them all at once.</p>
+    <ul id="tabList"></ul>
+    <button id="addButton">Add to clusters</button>
+    <ul id="cluster_result"></ul>
+  </section>
+
+  <a id="dashboardLink" href="#">Open dashboard</a>
   <script src="popup.js"></script>
 </body>
 </html>
