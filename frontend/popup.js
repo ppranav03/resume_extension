@@ -24,6 +24,15 @@ function getCurrentTab() {
   });
 }
 
+// Plain-text version of the duplicate heads-up the backend may return: a job with the
+// same company and role already saved under a different URL (e.g. a company's own
+// careers page vs. a LinkedIn listing for the same opening). Nothing merges automatically
+// -- this is just a note so you notice and can clean it up on the dashboard.
+function describeDuplicate(d) {
+  const seen = [d.scanned && "scanned", d.profiled && "clustered", d.status].filter(Boolean);
+  return `Note: you may already have this job — ${d.company} · ${d.role}${seen.length ? ` (${seen.join(", ")})` : ""} — saved from a different link.`;
+}
+
 // POSTs JSON to the backend and returns the parsed response.
 // Throws an Error with a readable message on any failure (backend down, or an error
 // status), so callers can show e.message directly.
@@ -122,11 +131,39 @@ document.getElementById("scanButton").addEventListener("click", async () => {
         contactsList.appendChild(listItem);
       });
       result.appendChild(contactsList);
+      if (data.possible_duplicate) {
+        const note = document.createElement('p');
+        note.className = 'hint';
+        note.textContent = describeDuplicate(data.possible_duplicate);
+        result.appendChild(note);
+      }
     }
   } catch (e) {
     result.textContent = e.message;
   } finally {
     // Runs on every path, including the early "No contacts found" return.
+    button.disabled = false;
+  }
+});
+
+document.getElementById("applyButton").addEventListener("click", async () => {
+  const currentUrl = await getCurrentTab();
+  const result = document.getElementById('apply_result');
+  const button = document.getElementById("applyButton");
+  // Unlike Scan, the backend doesn't yet know this job's company/role unless it was
+  // scanned or clustered before, so it may need to fetch the page and ask Gemini.
+  result.textContent = 'Saving...';
+  button.disabled = true;
+
+  try {
+    const data = await postJson("/apply", { url: currentUrl });
+    result.textContent = `Tracking: ${data.company} · ${data.role}. See it on the dashboard's Applications tab.`;
+    if (data.possible_duplicate) {
+      result.textContent += ' ' + describeDuplicate(data.possible_duplicate);
+    }
+  } catch (e) {
+    result.textContent = e.message;
+  } finally {
     button.disabled = false;
   }
 });
@@ -237,6 +274,9 @@ addButton.addEventListener("click", async () => {
       const name = r.company ? `${r.company} · ${r.role}` : r.url;
       const icon = r.status === "failed" ? "✕ Failed" : r.status === "updated" ? "↻ Updated" : "✓ Added";
       showResult(`${icon}: ${name}${r.error ? ` (${r.error})` : ""}`);
+      if (r.possible_duplicate) {
+        showResult(describeDuplicate(r.possible_duplicate));
+      }
     }
     for (const { title, reason } of unreadable) {
       showResult(`✕ Couldn't read ${title}: ${reason}`);

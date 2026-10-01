@@ -50,6 +50,22 @@
       cursor: default;
     }
 
+    button.secondary {
+      background: none;
+      color: #007acc;
+      border: 1px solid #007acc;
+    }
+
+    button.secondary:hover {
+      background: #e6f2fa;
+    }
+
+    button.secondary:disabled {
+      background: none;
+      color: #8fb8d0;
+      border-color: #8fb8d0;
+    }
+
     p {
       margin: 10px 0;
       font-size: 14px;
@@ -152,6 +168,8 @@
     <input type="text" placeholder="College/University" id="universityInput">
     <button id="scanButton">Scan this page</button>
     <p id="scan_result"></p>
+    <button id="applyButton" class="secondary">I applied to this job</button>
+    <p id="apply_result" class="hint"></p>
   </section>
 
   <section id="panel-cluster" role="tabpanel" aria-labelledby="tab-cluster" hidden>

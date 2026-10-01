@@ -12,6 +12,14 @@
   --accent-ink: #ffffff;
   --danger: #b3261e;
 
+  /* Application status. Reserved colors, never reused for a cluster series. Same hexes in
+     light and dark (both clear 3:1 on their surface); low-contrast ones (warning, serious)
+     are always paired with a text label, never used as text color alone. */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+
   /* Categorical palette, fixed order. Cluster id n uses series-(n+1). */
   --series-1: #2a78d6;
   --series-2: #eb6834;
@@ -87,6 +95,38 @@ p {
 
 .app-header h1 {
   font-size: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+.logo-mark {
+  flex: none;
+}
+
+.logo-edge {
+  stroke: var(--grid);
+  stroke-width: 2;
+}
+
+.logo-dot-1 {
+  fill: var(--series-1);
+}
+
+.logo-dot-2 {
+  fill: var(--series-2);
+}
+
+.logo-dot-3 {
+  fill: var(--series-3);
 }
 
 .tabs {
@@ -238,6 +278,23 @@ input[type="search"] {
   margin-bottom: 10px;
 }
 
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: none;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
 .notice {
   background: var(--surface);
   border: 1px dashed var(--border);
@@ -246,6 +303,20 @@ input[type="search"] {
   display: grid;
   gap: 8px;
   justify-items: start;
+}
+
+/* A dismissible one-line heads-up (e.g. a possible duplicate), not a full error state. */
+.notice-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.notice-inline p {
+  font-size: 14px;
 }
 
 /* ---- Contacts ---------------------------------------------------------- */
@@ -392,7 +463,11 @@ input[type="search"] {
 
 .cluster-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  /* auto-fit (not auto-fill): with few clusters, auto-fill still reserves empty column
+     tracks for space the grid could otherwise give to the real cards, leaving them
+     narrower than necessary and squeezing their job rows. auto-fit collapses the empty
+     tracks so existing cards use the freed width instead. */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
 }
 
@@ -445,9 +520,21 @@ input[type="search"] {
 }
 
 .job-list a {
+  /* Without flex-basis 0 and min-width 0, a flex item's automatic minimum width is its
+     content's full width, so text-overflow never actually gets a chance to engage and
+     the actions get pushed out instead of the text truncating. */
+  flex: 1 1 0;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.job-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
 }
 
 .job-list .ghost {
@@ -455,4 +542,134 @@ input[type="search"] {
   padding: 2px 8px;
   font-size: 16px;
   line-height: 1;
+}
+
+.job-list-actions .ghost:not(:last-child) {
+  font-size: 13px;
+  padding: 2px 8px;
+}
+
+/* ---- Applications ------------------------------------------------------- */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.board-column {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.board-column h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.app-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.app-card-title {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.app-card select,
+.app-card textarea {
+  width: 100%;
+}
+
+.app-card textarea {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  min-height: 56px;
+  resize: vertical;
+  font: inherit;
+}
+
+/* ---- Home ---------------------------------------------------------------- */
+
+.hero {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 28px 16px 8px;
+}
+
+.hero h1 {
+  font-size: 28px;
+}
+
+.hero-tagline {
+  max-width: 520px;
+  color: var(--ink-2);
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.feature-card {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.feature-card button {
+  justify-self: start;
 }

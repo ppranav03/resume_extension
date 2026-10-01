@@ -1,11 +1,12 @@
 # Referral Finder
 
-A Chrome extension plus a small website for job hunting. It does two things:
+A Chrome extension plus a small website for job hunting. It does three things:
 
 - **Referrals (one site at a time).** Open a job posting, enter your university, and click **Scan**. The extension lists LinkedIn profiles of people who work at that company in a similar role and went to your school. Every scan is saved.
 - **Clusters (many sites at once).** Tick several open job postings in the extension and add them together. The website groups every job you've added by role, day-to-day duties, or technical skills, so you can see which kinds of jobs you keep looking at.
+- **Applications.** Mark a job as applied from the extension, or from its card on the Contacts or Clusters tab. The website's Applications tab tracks it through Applied, Interviewing, Offer or Rejected, with notes.
 
-The website has two tabs: **Contacts** (each scanned job with its saved contacts) and **Clusters** (a map and cards of grouped jobs).
+The website has three tabs: **Contacts** (each scanned job with its saved contacts), **Clusters** (a map and cards of grouped jobs), and **Applications** (a board of the jobs you've applied to).
 
 ## How it works
 
@@ -29,6 +30,10 @@ React website (web/) ─────┘
 **Clusters view** (`GET /cluster?by=role|duties|skills`)
 1. The backend runs KMeans on the embeddings for the chosen dimension. The number of clusters is picked by silhouette score, or set by you (2 to 8).
 2. The vectors are flattened to 2D (PCA) for the map, and Gemini names each cluster.
+
+**Applications** (`POST /apply`, `PATCH /jobs/<id>`)
+1. Marking a job applied upserts it and, the first time, sets its status to `applied` and stamps today's date. If the job isn't already known, the backend fetches the page and asks Gemini for the company and role, same as a scan.
+2. Moving a card between columns or editing its notes sends a `PATCH` with `{status}` and/or `{notes}`. Setting `status` to `null` removes it from the tracker without deleting the job, its contacts, or its cluster data.
 
 ```
 frontend/   Chrome extension (popup with Referrals and Clusters tabs)
@@ -79,7 +84,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. You can link straight to a tab with `#contacts` or `#clusters`.
+Open `http://localhost:5173`. You can link straight to a tab with `#contacts`, `#clusters` or `#applications`.
 
 ### 4. Extension
 
@@ -93,6 +98,8 @@ The extension asks for access to all sites so it can read the text of the tabs y
 **Referrals:** open a specific job posting, click the extension, stay on the **Referrals** tab, enter your university and click **Scan this page**.
 
 **Clusters:** open several job postings in one window, click the extension, switch to **Clusters**, tick the postings and click **Add to clusters**. Adding the same page again updates it instead of duplicating it. You need at least 3 jobs before clusters appear on the website.
+
+**Applications:** click **I applied to this job** in the extension's Referrals tab, or click **Mark applied** / **Apply** on a job's card in the Contacts or Clusters tab. Open the website's **Applications** tab to see it, move it between stages with the dropdown, or add notes. **Remove from tracker** stops tracking it without deleting the job itself.
 
 After changing extension files, reload the extension in `chrome://extensions`. After changing `.env` or backend code, restart Flask.
 
@@ -114,6 +121,7 @@ After changing extension files, reload the extension in `chrome://extensions`. A
 | Website says it can't reach backend  | Flask isn't running, or it isn't on port 5000.                                                  |
 | A tab can't be added to clusters     | Browser-internal pages (`chrome://`) and the Chrome Web Store can't be read.                    |
 | Gemini "model not found" (404)       | Google retired the model. Set `GEMINI_MODEL` to a current one.                                  |
+| "I applied" is slow the first time   | The job wasn't scanned or clustered yet, so the backend fetches the page and calls Gemini before saving. Marking it applied from an existing card on the site is instant. |
 
 ## Limitations
 

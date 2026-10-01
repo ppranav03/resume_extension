@@ -43,6 +43,8 @@ def scan():
     job_details['university'] = data.get('university')
     print(job_details)
 
+    duplicate = db.find_similar(job_details['company'], job_details['role'], exclude_url=url)
+
     results = search_contacts(job_details)
     if results is None:
         return jsonify({"error": "Contact search failed. Check the backend logs."}), 502
@@ -50,7 +52,8 @@ def scan():
     db.save_scan(url, job_details['company'], job_details['role'], job_details['university'], results)
     return jsonify({
         'contacts': [result["title"] for result in results],
-        'links': [result["link"] for result in results]
+        'links': [result["link"] for result in results],
+        'possible_duplicate': duplicate
     })
 
 
@@ -116,9 +119,38 @@ def cluster_add():
                 results[page["url"]] = {
                     "url": page["url"], "status": status,
                     "company": profile["company"], "role": profile["role"],
+                    "possible_duplicate": db.find_similar(
+                        profile["company"], profile["role"], exclude_url=page["url"]
+                    ),
                 }
 
     return jsonify({"results": list(results.values())})
+
+
+@app.route("/apply", methods=['POST'])
+def apply():
+    """Add a job to the applications tracker. Body: {"url", "company"?, "role"?}.
+    company/role are optional: pass them when already known (e.g. from a job already on
+    the site) to skip the extraction call; omit them for a fresh URL (e.g. from the
+    extension) and the backend will fetch the page and work them out."""
+    data = request.get_json(silent=True) or {}
+    url = data.get('url')
+    if not url:
+        return jsonify({"error": "A url is needed."}), 400
+
+    company = data.get('company')
+    role = data.get('role')
+    if not company or not role:
+        webtext = process_url(url)
+        if webtext is None:
+            return jsonify({"error": "Invalid URL"}), 400
+        extracted = ai.extract_job(webtext["title"], webtext["description"])
+        company = company or extracted.get('company')
+        role = role or extracted.get('role')
+
+    duplicate = db.find_similar(company, role, exclude_url=url)
+    job_id = db.mark_applied(url, company, role)
+    return jsonify({"id": job_id, "company": company, "role": role, "possible_duplicate": duplicate})
 
 
 @app.route("/jobs")
@@ -131,6 +163,28 @@ def delete_job(job_id):
     if not db.delete_job(job_id):
         return jsonify({"error": "Job not found."}), 404
     return jsonify({"deleted": job_id})
+
+
+@app.route("/jobs/<int:job_id>", methods=['PATCH'])
+def update_job(job_id):
+    """Update an application's status and/or notes. Body: {"status"?, "notes"?}.
+    status may be null to remove the job from the tracker."""
+    data = request.get_json(silent=True) or {}
+    if "status" not in data and "notes" not in data:
+        return jsonify({"error": "Nothing to update."}), 400
+
+    if "status" in data:
+        status = data["status"]
+        if status is not None and status not in db.STATUSES:
+            return jsonify({"error": f"'status' must be one of {', '.join(db.STATUSES)}, or null."}), 400
+        if not db.update_status(job_id, status):
+            return jsonify({"error": "Job not found."}), 404
+
+    if "notes" in data:
+        if not db.update_notes(job_id, str(data["notes"] or "")):
+            return jsonify({"error": "Job not found."}), 404
+
+    return jsonify({"updated": job_id})
 
 
 @app.route("/cluster")
@@ -174,7 +228,7 @@ def cluster():
 
     points = [
         {"id": job["id"], "x": float(coords[i][0]), "y": float(coords[i][1]), "cluster": labels[i],
-         "company": job["company"], "role": job["role"], "url": job["url"]}
+         "company": job["company"], "role": job["role"], "url": job["url"], "status": job["status"]}
         for i, job in enumerate(jobs)
     ]
     return jsonify({**empty, "k": k_used, "points": points, "clusters": clusters})

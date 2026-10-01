@@ -1,23 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { deleteJob, getJobs } from "./api.js";
-
-const cleanTitle = (title) => (title || "").replace(/\s*[|-]\s*LinkedIn\s*$/i, "");
-
-const shortDate = (iso) =>
-  new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-
-const hostOf = (url) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-};
+import { deleteJob, getJobs, markApplied } from "./api.js";
+import { cleanTitle, describeDuplicate, hostOf, shortDate } from "./format.js";
+import StatusBadge from "./StatusBadge.jsx";
 
 export default function ContactsTab() {
   const [jobs, setJobs] = useState(null);
   const [error, setError] = useState(null);
   const [query, setQuery] = useState("");
+  const [duplicate, setDuplicate] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -37,6 +27,16 @@ export default function ContactsTab() {
     if (!window.confirm(`Remove ${job.company} · ${job.role} and its contacts?`)) return;
     try {
       await deleteJob(job.id);
+      await load();
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
+  async function apply(job) {
+    try {
+      const result = await markApplied(job);
+      setDuplicate(result.possible_duplicate || null);
       await load();
     } catch (e) {
       setError(e.message);
@@ -83,6 +83,20 @@ export default function ContactsTab() {
         </button>
       </div>
 
+      {duplicate && (
+        <div className="notice notice-inline">
+          <p>
+            {describeDuplicate(duplicate)}{" "}
+            <a href={duplicate.url} target="_blank" rel="noreferrer">
+              View the original
+            </a>
+          </p>
+          <button className="ghost" onClick={() => setDuplicate(null)} aria-label="Dismiss">
+            ×
+          </button>
+        </div>
+      )}
+
       {jobs.length === 0 ? (
         <div className="notice">
           <p>No referral searches yet.</p>
@@ -109,9 +123,18 @@ export default function ContactsTab() {
                   {job.contacts.length} contact{job.contacts.length === 1 ? "" : "s"}
                 </p>
               </div>
-              <button className="ghost danger" onClick={() => remove(job)} aria-label={`Remove ${job.company}`}>
-                Remove
-              </button>
+              <div className="card-actions">
+                {job.status ? (
+                  <StatusBadge status={job.status} />
+                ) : (
+                  <button className="ghost" onClick={() => apply(job)}>
+                    Mark applied
+                  </button>
+                )}
+                <button className="ghost danger" onClick={() => remove(job)} aria-label={`Remove ${job.company}`}>
+                  Remove
+                </button>
+              </div>
             </div>
             {job.contacts.length === 0 ? (
               <p className="muted small">No contacts were found for this posting.</p>

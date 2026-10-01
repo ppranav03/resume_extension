@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { deleteJob, getClusters } from "./api.js";
+import { deleteJob, getClusters, markApplied } from "./api.js";
+import { describeDuplicate } from "./format.js";
 import ScatterPlot, { clusterColor } from "./ScatterPlot.jsx";
+import StatusBadge from "./StatusBadge.jsx";
 
 const DIMENSIONS = [
   { id: "role", label: "Role", blurb: "job title and function" },
@@ -20,6 +22,7 @@ export default function ClustersTab() {
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
   const [reloads, setReloads] = useState(0);
+  const [duplicate, setDuplicate] = useState(null);
 
   useEffect(() => {
     let stale = false;
@@ -42,6 +45,16 @@ export default function ClustersTab() {
     if (!window.confirm(`Remove ${point.company} · ${point.role} from your jobs?`)) return;
     try {
       await deleteJob(point.id);
+      setReloads((n) => n + 1);
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
+  async function apply(point) {
+    try {
+      const result = await markApplied(point);
+      setDuplicate(result.possible_duplicate || null);
       setReloads((n) => n + 1);
     } catch (e) {
       setError(e.message);
@@ -98,6 +111,20 @@ export default function ClustersTab() {
       {error && (
         <div className="notice" role="alert">
           <p>{error}</p>
+        </div>
+      )}
+
+      {duplicate && (
+        <div className="notice notice-inline">
+          <p>
+            {describeDuplicate(duplicate)}{" "}
+            <a href={duplicate.url} target="_blank" rel="noreferrer">
+              View the original
+            </a>
+          </p>
+          <button className="ghost" onClick={() => setDuplicate(null)} aria-label="Dismiss">
+            ×
+          </button>
         </div>
       )}
 
@@ -176,9 +203,18 @@ export default function ClustersTab() {
                         <a href={p.url} target="_blank" rel="noreferrer">
                           {p.company} · {p.role}
                         </a>
-                        <button className="ghost danger" onClick={() => remove(p)} aria-label={`Remove ${p.company}`}>
-                          ×
-                        </button>
+                        <span className="job-list-actions">
+                          {p.status ? (
+                            <StatusBadge status={p.status} />
+                          ) : (
+                            <button className="ghost" onClick={() => apply(p)}>
+                              Apply
+                            </button>
+                          )}
+                          <button className="ghost danger" onClick={() => remove(p)} aria-label={`Remove ${p.company}`}>
+                            ×
+                          </button>
+                        </span>
                       </li>
                     );
                   })}
